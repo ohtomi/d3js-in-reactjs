@@ -1,6 +1,6 @@
 (function(global) {
 var drawChart = function(data, info, opt) {
-  var svg, main, xExtent, yExtent, x, y, color, line, path, xaxis, yaxis, xAxis, yAxis;
+  var svg, main, xExtent, yExtent, x, y, color, line, path, xaxis, yaxis, xAxis, yAxis, brush, gBrush;
 
   svg = d3.select('#visualization').append('svg')
     .attr('width', opt.width + opt.margin.width)
@@ -40,6 +40,33 @@ var drawChart = function(data, info, opt) {
   xAxis = main.append('g').classed('axis', true).call(xaxis)
     .attr('transform', 'translate(0, ' + opt.height +')');
   yAxis = main.append('g').classed('axis', true).call(yaxis);
+
+  brush = d3.svg.brush().x(x).on('brushend', function() {
+    svg.classed('brushing', !brush.empty());
+    var extent = brush.empty() ? xExtent : brush.extent();
+    x.domain(extent);
+    xAxis.call(xaxis);
+
+    path.attr('d', line(data.filter(function(d) {
+      return (extent[0] < new Date(d.epoch * 1000)) && (new Date(d.epoch * 1000) < extent[1]);
+    })));
+
+    brush.clear();
+    gBrush.select('.extent').attr('width', 0);
+
+    var btn = main.append('text').text('cancel zoom').attr('dx', opt.width - 100);
+    btn.on('click', function() {
+      x.domain(xExtent);
+      xAxis.call(xaxis);
+      path.attr('d', line);
+      btn.remove();
+    });
+  });
+  gBrush = main.append('g').call(brush);
+  gBrush.selectAll('rect')
+    .attr('height', opt.height)
+    .attr('opacity', 0.125)
+    .attr('shape-rendering', 'crispEdges');
 
   return svg;
 }
