@@ -6,7 +6,6 @@
   "scripts": {
     "build": "ulimit -n 2560; gulp build",
     "clean": "gulp del",
-    "doc": "ulimit -n 2560; jsdoc -r public/js -d doc/jsdoc",
     "lint": "gulp jsxhint",
     "server": "json-server --port 8080 --static ./public --watch mock.json",
     "watch": "ulimit -n 2560; gulp watch"

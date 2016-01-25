@@ -9,7 +9,7 @@ gulp.task('del', function(done) {
 
     return del([
         paths.dest.js + '/**/*.js',
-        paths.dest.js + '/**/*.js.map',
+        paths.dest.js + '/**/*.map',
         paths.dest.css + '/**/*.css'
     ], done);
 });
@@ -56,17 +56,6 @@ gulp.task('browserify', function() {
     return compile(false, true);
 });
 
-//gulp.task('karma', function(done) {
-//    var karma = require('karma').server;
-//
-//    karma.start({
-//        configFile: __dirname + '/karma.conf.js',
-//        singleRun: true
-//        }, function(exitStatus) {
-//            done(exitStatus ? 'There are failing unit tests' : undefined);
-//        });
-//});
-
 gulp.task('jsxhint', function() {
     var jshint = require('gulp-jshint');
 
@@ -77,20 +66,29 @@ gulp.task('jsxhint', function() {
         .pipe(jshint.reporter('default'));
 });
 
-//gulp.task('sass', function() {
-//    var sass = require('gulp-sass');
-//
-//    return gulp.src(paths.main.css + '/*.scss')
-//        .pipe(sass())
-//        .pipe(gulp.dest(paths.dest.css))
-//        .pipe(gulp.dest(paths.doc.styleguide));
-//});
-
-gulp.task('watch', ['browserify'], function() {
-//    gulp.watch([paths.test.js + '/**/*.js'], ['karma']);
-//    gulp.watch([paths.main.css + '/**/*.scss'], ['sass']);
+gulp.task('css', function() {
+    gulp.src([
+        paths.main.css + '/**/*.css'
+    ])
+    .pipe(gulp.dest(paths.dest.css));
 });
 
-gulp.task('build', function() {
+gulp.task('vendor', function() {
+    gulp.src([
+        paths.vendor.js + '/**/*.js',
+        paths.vendor.js + '/**/*.map'
+    ])
+    .pipe(gulp.dest(paths.dest.js));
+    gulp.src([
+        paths.vendor.css + '/**/*.css'
+    ])
+    .pipe(gulp.dest(paths.dest.css));
+});
+
+gulp.task('watch', ['browserify', 'css', 'vendor'], function() {
+    gulp.watch([paths.main.css + '/**/*.css'], ['css']);
+});
+
+gulp.task('build', ['css', 'vendor'], function() {
     return compile(true, false);
 });
