@@ -3,10 +3,6 @@
         "js": "./src/main/js/",
         "css": "./src/main/css/"
     },
-    "vendor": {
-        "js": "./src/vendor/js/",
-        "css": "./src/vendor/css/"
-    },
     "dest": {
         "js": "./public/js/",
         "css": "./public/css/"

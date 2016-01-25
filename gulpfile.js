@@ -73,22 +73,10 @@ gulp.task('css', function() {
     .pipe(gulp.dest(paths.dest.css));
 });
 
-gulp.task('vendor', function() {
-    gulp.src([
-        paths.vendor.js + '/**/*.js',
-        paths.vendor.js + '/**/*.map'
-    ])
-    .pipe(gulp.dest(paths.dest.js));
-    gulp.src([
-        paths.vendor.css + '/**/*.css'
-    ])
-    .pipe(gulp.dest(paths.dest.css));
-});
-
-gulp.task('watch', ['browserify', 'css', 'vendor'], function() {
+gulp.task('watch', ['browserify', 'css'], function() {
     gulp.watch([paths.main.css + '/**/*.css'], ['css']);
 });
 
-gulp.task('build', ['css', 'vendor'], function() {
+gulp.task('build', ['css'], function() {
     return compile(true, false);
 });
