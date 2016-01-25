@@ -1,0 +1,13 @@
+{
+  "main": {
+    "js": "./src/main/js/",
+    "css": "./src/main/css/"
+  },
+  "dest": {
+    "js": "./public/js/",
+    "css": "./public/css/"
+  },
+  "doc": {
+    "jsdoc": "./doc/jsdoc/"
+  }
+}
