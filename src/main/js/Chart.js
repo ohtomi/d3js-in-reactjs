@@ -16,18 +16,16 @@ var Chart = React.createClass({
         yPadding: React.PropTypes.number
     },
 
-    svg: null,
-
     componentDidMount: function() {
-        this.svg = d3.select(this.refs.chart).append('svg')
+        var svg = d3.select(this.refs.chart).append('svg')
             .attr('width', this.props.width)
             .attr('height', this.props.height);
 
-        this.svg.append('g')
+        svg.append('g')
             .classed('axis', true)
             .classed('xAxis', true);
 
-        this.svg.append('g')
+        svg.append('g')
             .classed('axis', true)
             .classed('yAxis', true);
 
@@ -57,6 +55,8 @@ var Chart = React.createClass({
             })])
             .range([2, 5]);
 
+        var colorScale = d3.scale.category10();
+
         var xAxis = d3.svg.axis()
             .scale(xScale)
             .orient('bottom')
@@ -67,20 +67,24 @@ var Chart = React.createClass({
             .orient('left')
             .ticks(5);
 
-        this.svg.selectAll('.xAxis')
+        var svg = d3.select(this.refs.chart).select('svg');
+
+        svg.selectAll('.xAxis')
             .attr('transform', 'translate(0,' + (this.props.height - this.props.yPadding) + ')')
             .call(xAxis);
 
-        this.svg.selectAll('.yAxis')
+        svg.selectAll('.yAxis')
             .attr('transform', 'translate(' + this.props.xPadding + ',0)')
             .call(yAxis);
 
-        this.svg.selectAll('circle')
-            .data(this.props.dataset, function(d) {
-                return d[2];
-            })
+        var circles = svg.selectAll('circle')
+            .data(this.props.dataset);
+
+        circles
             .enter()
-            .append('circle')
+            .append('circle');
+
+        circles
             .attr('cx', function(d) {
                 return xScale(d[0]);
             })
@@ -89,12 +93,12 @@ var Chart = React.createClass({
             })
             .attr('r', function(d) {
                 return rScale(d[1]);
+            })
+            .attr('fill', function(d, i) {
+                return colorScale(i);
             });
 
-        this.svg.selectAll('circle')
-            .data(this.props.dataset, function(d) {
-                return d[2];
-            })
+        circles
             .exit()
             .remove();
     },

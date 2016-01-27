@@ -10,7 +10,6 @@ var App = React.createClass({
 
     getInitialState: function() {
         return {
-            seed: 0,
             dataset: [],
             width: 800,
             height: 400,
@@ -24,7 +23,6 @@ var App = React.createClass({
     },
 
     refreshData: function() {
-        var seed = this.state.seed;
         var dataset = [];
         var numDataPoints = 50;
         var xRange = Math.random() * 1000;
@@ -32,12 +30,9 @@ var App = React.createClass({
         for (var i = 0; i < numDataPoints; i++) {
             var newNumber1 = Math.round(Math.random() * xRange);
             var newNumber2 = Math.round(Math.random() * yRange);
-            dataset.push([newNumber1, newNumber2, seed++]);
+            dataset.push([newNumber1, newNumber2]);
         }
-        this.setState({
-            seed: seed,
-            dataset: dataset
-        });
+        this.setState({dataset: dataset});
     },
 
     render: function() {
