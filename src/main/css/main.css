@@ -1,0 +1,18 @@
+body {
+    background-color: #efefef;
+}
+
+/*
+ following styles are for svg elements.
+*/
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: cripsEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
