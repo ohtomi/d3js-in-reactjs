@@ -23,11 +23,13 @@ var Chart = React.createClass({
 
         svg.append('g')
             .classed('axis', true)
-            .classed('xAxis', true);
+            .classed('xAxis', true)
+            .attr('transform', 'translate(0,' + (this.props.height - this.props.yPadding) + ')');
 
         svg.append('g')
             .classed('axis', true)
-            .classed('yAxis', true);
+            .classed('yAxis', true)
+            .attr('transform', 'translate(' + this.props.xPadding + ',0)');
 
         this.updateChart();
     },
@@ -68,14 +70,8 @@ var Chart = React.createClass({
             .ticks(5);
 
         var svg = d3.select(this.refs.chart).select('svg');
-
-        svg.selectAll('.xAxis')
-            .attr('transform', 'translate(0,' + (this.props.height - this.props.yPadding) + ')')
-            .call(xAxis);
-
-        svg.selectAll('.yAxis')
-            .attr('transform', 'translate(' + this.props.xPadding + ',0)')
-            .call(yAxis);
+        svg.selectAll('.xAxis').call(xAxis);
+        svg.selectAll('.yAxis').call(yAxis);
 
         var circles = svg.selectAll('circle')
             .data(this.props.dataset);
