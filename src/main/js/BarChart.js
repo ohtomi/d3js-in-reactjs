@@ -1,4 +1,4 @@
-// Chart.js
+// BarChart.js
 (function() {
 
 'use strict';
@@ -6,7 +6,7 @@
 var React = require('react');
 var d3 = require('d3');
 
-var Chart = React.createClass({
+var BarChart = React.createClass({
 
     propTypes: {
         dataset: React.PropTypes.array,
@@ -40,22 +40,14 @@ var Chart = React.createClass({
 
     updateChart: function() {
         var xScale = d3.scale.linear()
-            .domain([0, d3.max(this.props.dataset, function(d) {
-                return d[0];
-            })])
+            .domain([0, this.props.dataset.length])
             .range([this.props.xPadding, this.props.width - this.props.xPadding]);
 
         var yScale = d3.scale.linear()
             .domain([0, d3.max(this.props.dataset, function(d) {
-                return d[1];
+                return d[0];
             })])
             .range([this.props.height - this.props.yPadding, this.props.yPadding]);
-
-        var rScale = d3.scale.linear()
-            .domain([0, d3.max(this.props.dataset, function(d) {
-                return d[1];
-            })])
-            .range([2, 5]);
 
         var colorScale = d3.scale.category10();
 
@@ -73,28 +65,38 @@ var Chart = React.createClass({
         svg.selectAll('.xAxis').call(xAxis);
         svg.selectAll('.yAxis').call(yAxis);
 
-        var circles = svg.selectAll('circle')
+        var that = this;
+        var rects = svg.selectAll('rect')
             .data(this.props.dataset);
 
-        circles
+        rects
             .enter()
-            .append('circle');
-
-        circles
-            .attr('cx', function(d) {
-                return xScale(d[0]);
+            .append('rect')
+            .attr('x', function(d, i) {
+                return xScale(i);
             })
-            .attr('cy', function(d) {
-                return yScale(d[1]);
+            .attr('y', function(d) {
+                return yScale(d[0]);
             })
-            .attr('r', function(d) {
-                return rScale(d[1]);
+            .attr('width',
+                Math.round((this.props.width - this.props.xPadding) / this.props.dataset.length))
+            .attr('height', function(d) {
+                return that.props.height - that.props.yPadding - yScale(d[0]);
             })
             .attr('fill', function(d, i) {
                 return colorScale(i);
             });
 
-        circles
+        rects
+            .transition()
+            .attr('y', function(d) {
+                return yScale(d[0]);
+            })
+            .attr('height', function(d) {
+                return that.props.height - that.props.yPadding - yScale(d[0]);
+            });
+
+        rects
             .exit()
             .remove();
     },
@@ -107,6 +109,6 @@ var Chart = React.createClass({
 
 });
 
-module.exports = Chart;
+module.exports = BarChart;
 
 })();
