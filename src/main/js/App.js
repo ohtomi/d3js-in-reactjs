@@ -6,6 +6,7 @@
 var React = require('react');
 var ScatterPlot = require('./ScatterPlot');
 var BarChart = require('./BarChart');
+var TreeMap = require('./TreeMap');
 
 var App = React.createClass({
 
@@ -25,7 +26,24 @@ var App = React.createClass({
     },
 
     switchChartType: function(chartType) {
-        this.setState({chartType: chartType});
+        if (chartType === 'treeMap') {
+            var dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            var sample = [];
+            for (var i = 0; i < 100; i++) {
+                var dow = Math.round(Math.random() * 7);
+                var hour = Math.round(Math.random() * 12);
+                sample.push({
+                    dayOfTheWeek: dows[dow],
+                    hour: hour
+                });
+            }
+            this.setState({
+                dataset: sample,
+                chartType: chartType
+            });
+        } else {
+            this.setState({chartType: chartType});
+        }
     },
 
     refreshData: function() {
@@ -40,6 +58,8 @@ var App = React.createClass({
         }
         this.setState({dataset: dataset});
     },
+
+
 
     render: function() {
         return (
@@ -62,11 +82,27 @@ var App = React.createClass({
     renderSwitchLinks: function() {
         if (this.state.chartType === 'scatterPlot') {
             return (
-                <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
+                <span>
+                    <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
+                    {' '}
+                    <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
+                </span>
             );
         } else if (this.state.chartType === 'barChart') {
             return (
-                <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
+                <span>
+                    <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
+                    {' '}
+                    <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
+                </span>
+            );
+        } else if (this.state.chartType === 'treeMap') {
+            return (
+                <span>
+                    <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
+                    {' '}
+                    <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
+                </span>
             );
         } else {
             return (
@@ -74,6 +110,8 @@ var App = React.createClass({
                     <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
                     {' '}
                     <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
+                    {' '}
+                    <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
                 </span>
             );
         }
@@ -87,6 +125,10 @@ var App = React.createClass({
         } else if (this.state.chartType === 'barChart') {
             return (
                 <BarChart {...this.state} />
+            );
+        } else if (this.state.chartType === 'treeMap') {
+            return (
+                <TreeMap {...this.state} />
             );
         } else {
             return (
