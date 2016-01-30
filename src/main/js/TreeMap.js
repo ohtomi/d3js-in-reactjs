@@ -43,6 +43,7 @@ var TreeMap = React.createClass({
                     return value;
                 }
             }];
+
         var nest = _.chain(attrs)
             .reduce(function(nest, attr) {
                 return nest.key(function(d) {
@@ -77,15 +78,17 @@ var TreeMap = React.createClass({
 
         var svg = d3.select(this.refs.chart).select('svg');
 
-        var g = svg.selectAll('g')
-            .data(nodes)
+        var rects = svg.selectAll('rect')
+            .data(nodes);
+
+        rects
             .enter()
-            .append('g')
+            .append('rect');
+
+        rects
             .attr('transform', function(d) {
                 return 'translate(' + d.y * that.props.width + ',' + (d.x * that.props.height) + ')';
-            });
-
-        g.append('rect')
+            })
             .attr('width', function(d) {
                 return d.dy * that.props.width;
             })
@@ -103,6 +106,10 @@ var TreeMap = React.createClass({
                 return d.parent ? d.value / d.parent.value : 0.8;
             })
             .style('cursor', 'pointer');
+
+        rects
+            .exit()
+            .remove();
     },
 
     render: function() {
