@@ -13,6 +13,7 @@ var App = React.createClass({
     getInitialState: function() {
         return {
             chartType: 'scatterPlot',
+            refreshFunc: this.scatterPlotData,
             dataset: [],
             width: 800,
             height: 400,
@@ -26,27 +27,21 @@ var App = React.createClass({
     },
 
     switchChartType: function(chartType) {
-        if (chartType === 'treeMap') {
-            var dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            var sample = [];
-            for (var i = 0; i < 100; i++) {
-                var dow = Math.round(Math.random() * 7);
-                var hour = Math.round(Math.random() * 12);
-                sample.push({
-                    dayOfTheWeek: dows[dow],
-                    hour: hour
-                });
-            }
-            this.setState({
-                dataset: sample,
-                chartType: chartType
-            });
-        } else {
-            this.setState({chartType: chartType});
-        }
+        var func = this[chartType + 'Data'];
+        var dataset = func();
+        this.setState({
+            chartType: chartType,
+            refreshFunc: func,
+            dataset: dataset
+        });
     },
 
     refreshData: function() {
+        var dataset = this.state.refreshFunc();
+        this.setState({dataset: dataset});
+    },
+
+    _refreshPairData: function() {
         var dataset = [];
         var numDataPoints = 50;
         var number1Range = Math.random() * 1000;
@@ -56,10 +51,30 @@ var App = React.createClass({
             var newNumber2 = Math.round(Math.random() * number2Range);
             dataset.push([newNumber1, newNumber2]);
         }
-        this.setState({dataset: dataset});
+        return dataset;
     },
 
+    scatterPlotData: function() {
+        return this._refreshPairData();
+    },
 
+    barChartData: function() {
+        return this._refreshPairData();
+    },
+
+    treeMapData: function() {
+        var dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        var dataset = [];
+        for (var i = 0; i < 100; i++) {
+            var dow = Math.round(Math.random() * 7);
+            var hour = Math.round(Math.random() * 12);
+            dataset.push({
+                dayOfTheWeek: dows[dow],
+                hour: hour
+            });
+        }
+        return dataset;
+    },
 
     render: function() {
         return (
