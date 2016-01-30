@@ -78,9 +78,7 @@ var ScatterPlot = React.createClass({
 
         circles
             .enter()
-            .append('circle');
-
-        circles
+            .append('circle')
             .attr('cx', function(d) {
                 return xScale(d[0]);
             })
@@ -92,6 +90,18 @@ var ScatterPlot = React.createClass({
             })
             .attr('fill', function(d, i) {
                 return colorScale(i);
+            });
+
+        circles
+            .transition()
+            .attr('cx', function(d) {
+                return xScale(d[0]);
+            })
+            .attr('cy', function(d) {
+                return yScale(d[1]);
+            })
+            .attr('r', function(d) {
+                return rScale(d[1]);
             });
 
         circles
