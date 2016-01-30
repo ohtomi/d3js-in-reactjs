@@ -13,7 +13,8 @@ var App = React.createClass({
     getInitialState: function() {
         return {
             chartType: 'scatterPlot',
-            refreshFunc: this.scatterPlotData,
+            chartComponent: ScatterPlot,
+            refreshFunction: this.scatterPlotData,
             dataset: [],
             width: 800,
             height: 400,
@@ -27,17 +28,33 @@ var App = React.createClass({
     },
 
     switchChartType: function(chartType) {
-        var func = this[chartType + 'Data'];
-        var dataset = func();
+        if (chartType === this.state.chartType) {
+            return;
+        }
+
+        var chartComponent, refreshFunction, dataset;
+
+        if (chartType === 'scatterPlot') {
+            chartComponent = ScatterPlot;
+        } else if (chartType === 'barChart') {
+            chartComponent = BarChart;
+        } else if (chartType === 'treeMap') {
+            chartComponent = TreeMap;
+        }
+
+        refreshFunction = this[chartType + 'Data'];
+        dataset = refreshFunction();
+
         this.setState({
             chartType: chartType,
-            refreshFunc: func,
+            chartComponent: chartComponent,
+            refreshFunction: refreshFunction,
             dataset: dataset
         });
     },
 
     refreshData: function() {
-        var dataset = this.state.refreshFunc();
+        var dataset = this.state.refreshFunction();
         this.setState({dataset: dataset});
     },
 
@@ -95,61 +112,21 @@ var App = React.createClass({
     },
 
     renderSwitchLinks: function() {
-        if (this.state.chartType === 'scatterPlot') {
-            return (
-                <span>
-                    <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
-                    {' '}
-                    <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
-                </span>
-            );
-        } else if (this.state.chartType === 'barChart') {
-            return (
-                <span>
-                    <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
-                    {' '}
-                    <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
-                </span>
-            );
-        } else if (this.state.chartType === 'treeMap') {
-            return (
-                <span>
-                    <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
-                    {' '}
-                    <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
-                </span>
-            );
-        } else {
-            return (
-                <span>
-                    <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
-                    {' '}
-                    <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
-                    {' '}
-                    <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
-                </span>
-            );
-        }
+        return (
+            <span>
+                <a href="#" onClick={this.switchChartType.bind(null, 'scatterPlot')}>Scatter Plot</a>
+                {' '}
+                <a href="#" onClick={this.switchChartType.bind(null, 'barChart')}>Bar Chart</a>
+                {' '}
+                <a href="#" onClick={this.switchChartType.bind(null, 'treeMap')}>Tree Map</a>
+            </span>
+        );
     },
 
     renderSpecifiedChart: function() {
-        if (this.state.chartType === 'scatterPlot') {
-            return (
-                <ScatterPlot {...this.state} />
-            );
-        } else if (this.state.chartType === 'barChart') {
-            return (
-                <BarChart {...this.state} />
-            );
-        } else if (this.state.chartType === 'treeMap') {
-            return (
-                <TreeMap {...this.state} />
-            );
-        } else {
-            return (
-                <span>Select Chart Type</span>
-            );
-        }
+        return (
+            <this.state.chartComponent {...this.state} />
+        );
     }
 
 });
