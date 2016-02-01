@@ -22,11 +22,11 @@ function generatePairData() {
 }
 
 function scatterPlotData() {
-    return generatePairData();
+    return Promise.resolve(generatePairData());
 }
 
 function barChartData() {
-    return generatePairData();
+    return Promise.resolve(generatePairData());
 }
 
 function treeMapData() {
@@ -40,18 +40,18 @@ function treeMapData() {
             hour: hour + ':00'
         });
     }
-    return dataset;
+    return Promise.resolve(dataset);
 }
 
-function generateData(chartComponent) {
+function generateData(chartComponent, done) {
     if (chartComponent === ScatterPlot) {
-        return scatterPlotData();
+        scatterPlotData().then(done);
     } else if (chartComponent === BarChart) {
-        return barChartData();
+        barChartData().then(done);
     } else if (chartComponent === TreeMap) {
-        return treeMapData();
+        treeMapData().then(done);
     } else {
-        return [];
+        done([]);
     }
 }
 
@@ -98,17 +98,21 @@ var App = React.createClass({
     },
 
     componentDidMount: function() {
-        var dataset = generateData(this.state.chartComponent);
+        var dataset = [];
         var groupByFunctions = getFunctions(this.state.chartComponent);
         this.setState({
             dataset: dataset,
             groupByFunctions: groupByFunctions
         });
+
+        this.refreshData(this.state.chartComponent);
     },
 
-    refreshData: function() {
-        var dataset = generateData(this.state.chartComponent);
-        this.setState({dataset: dataset});
+    refreshData: function(chartComponent) {
+        var that = this;
+        generateData(chartComponent, function(dataset) {
+            that.setState({dataset: dataset});
+        });
     },
 
     switchChartType: function(chartComponent) {
@@ -116,13 +120,15 @@ var App = React.createClass({
             return;
         }
 
-        var dataset = generateData(chartComponent);
+        var dataset = [];
         var groupByFunctions = getFunctions(chartComponent);
         this.setState({
             chartComponent: chartComponent,
             dataset: dataset,
             groupByFunctions: groupByFunctions
         });
+
+        this.refreshData(chartComponent);
     },
 
     changeFunctionsOrder: function(i) {
@@ -149,7 +155,7 @@ var App = React.createClass({
                         <a href="#" onClick={this.switchChartType.bind(null, TreeMap)}>Tree Map</a>
                     </div>
                     <div style={{float: 'right'}}>
-                        <a href="#" onClick={this.refreshData}>Refresh Data</a>
+                        <a href="#" onClick={this.refreshData.bind(null, this.state.chartComponent)}>Refresh Data</a>
                     </div>
                 </div>
                 <div>
