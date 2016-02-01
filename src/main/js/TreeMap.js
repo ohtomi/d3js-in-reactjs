@@ -14,7 +14,8 @@ var TreeMap = React.createClass({
         width: React.PropTypes.number,
         height: React.PropTypes.number,
         xPadding: React.PropTypes.number,
-        yPadding: React.PropTypes.number
+        yPadding: React.PropTypes.number,
+        changeFunctionsOrder: React.PropTypes.func
     },
 
     componentDidMount: function() {
@@ -30,21 +31,7 @@ var TreeMap = React.createClass({
     },
 
     updateChart: function() {
-        var attrs = [
-            {
-                key: 'dayOfTheWeek',
-                func: function(value) {
-                    return value;
-                }
-            },
-            {
-                key: 'hour',
-                func: function(value) {
-                    return value;
-                }
-            }];
-
-        var nest = _.chain(attrs)
+        var nest = _.chain(this.props.groupByFunctions)
             .reduce(function(nest, attr) {
                 return nest.key(function(d) {
                     return attr.func(d[attr.key]);
@@ -105,7 +92,14 @@ var TreeMap = React.createClass({
             .style('opacity', function(d) {
                 return d.parent ? d.value / d.parent.value : 0.8;
             })
-            .style('cursor', 'pointer');
+            .style('cursor', 'pointer')
+            .on('click', function(d) {
+                if (d.depth === 0) {
+                    return;
+                }
+                var index = d.depth - 1;
+                that.props.changeFunctionsOrder(index);
+            });
 
         rects
             .exit()
@@ -131,6 +125,10 @@ var TreeMap = React.createClass({
             .text(function(d) {
                 return d.key + ': ' + d.value + ' commit(s)';
             });
+
+        texts
+            .exit()
+            .remove();
     },
 
     render: function() {

@@ -37,7 +37,7 @@ function treeMapData() {
         var hour = Math.round(Math.random() * 11);
         dataset.push({
             dayOfTheWeek: dows[dow],
-            hour: hour
+            hour: hour + ':00'
         });
     }
     return dataset;
@@ -55,22 +55,55 @@ function generateData(chartComponent) {
     }
 }
 
+var treeMapFunctions = [
+    {
+        key: 'dayOfTheWeek',
+        func: function(value) {
+            return value;
+        }
+    },
+    {
+        key: 'hour',
+        func: function(value) {
+            return value;
+        }
+    }
+];
+
+function getFunctions(chartComponent) {
+    if (chartComponent === ScatterPlot) {
+        return [];
+    } else if (chartComponent === BarChart) {
+        return [];
+    } else if (chartComponent === TreeMap) {
+        return treeMapFunctions;
+    } else {
+        return [];
+    }
+}
+
 var App = React.createClass({
 
     getInitialState: function() {
         return {
             chartComponent: ScatterPlot,
             dataset: [],
+            groupByFunctions: [],
             width: 800,
             height: 400,
             xPadding: 40,
-            yPadding: 20
+            yPadding: 20,
+            changeFunctionsOrder: this.changeFunctionsOrder
         };
     },
 
     componentDidMount: function() {
         var dataset = generateData(this.state.chartComponent);
-        this.setState({dataset: dataset});
+        var groupByFunctions = getFunctions(this.state.chartComponent);
+        this.setState({
+            dataset: dataset,
+            groupByFunctions: groupByFunctions
+        });
     },
 
     refreshData: function() {
@@ -84,10 +117,24 @@ var App = React.createClass({
         }
 
         var dataset = generateData(chartComponent);
+        var groupByFunctions = getFunctions(chartComponent);
         this.setState({
             chartComponent: chartComponent,
-            dataset: dataset
+            dataset: dataset,
+            groupByFunctions: groupByFunctions
         });
+    },
+
+    changeFunctionsOrder: function(i) {
+        if (i === 0 || i < 0 || i >= this.state.groupByFunctions.length) {
+            return;
+        }
+
+        var groupByFunctions = [];
+        groupByFunctions = groupByFunctions.concat(this.state.groupByFunctions[i]);
+        groupByFunctions = groupByFunctions.concat(this.state.groupByFunctions.slice(0, i));
+        groupByFunctions = groupByFunctions.concat(this.state.groupByFunctions.slice(i + 1));
+        this.setState({groupByFunctions: groupByFunctions});
     },
 
     render: function() {
