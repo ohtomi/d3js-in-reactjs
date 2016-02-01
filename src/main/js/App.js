@@ -33,8 +33,8 @@ function treeMapData() {
     var dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     var dataset = [];
     for (var i = 0; i < 50; i++) {
-        var dow = Math.round(Math.random() * 7);
-        var hour = Math.round(Math.random() * 12);
+        var dow = Math.round(Math.random() * 6);
+        var hour = Math.round(Math.random() * 11);
         dataset.push({
             dayOfTheWeek: dows[dow],
             hour: hour
