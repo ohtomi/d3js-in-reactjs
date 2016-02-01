@@ -87,7 +87,7 @@ var TreeMap = React.createClass({
 
         rects
             .attr('transform', function(d) {
-                return 'translate(' + d.y * that.props.width + ',' + (d.x * that.props.height) + ')';
+                return 'translate(' + d.y * that.props.width + ',' + d.x * that.props.height + ')';
             })
             .attr('width', function(d) {
                 return d.dy * that.props.width;
@@ -110,6 +110,27 @@ var TreeMap = React.createClass({
         rects
             .exit()
             .remove();
+
+        var texts = svg.selectAll('text')
+            .data(nodes);
+
+        texts
+            .enter()
+            .append('text');
+
+        texts
+            .attr('x', function(d) {
+                return d.y * that.props.width + 30;
+            })
+            .attr('y', function(d) {
+                return d.x * that.props.height + (d.dx * that.props.height + 15) / 2;
+            })
+            .style('opacity', function(d) {
+                return (d.dx * that.props.height) > 20 ? 1.0 : 0.0;
+            })
+            .text(function(d) {
+                return d.key + ': ' + d.value + ' commit(s)';
+            });
     },
 
     render: function() {
