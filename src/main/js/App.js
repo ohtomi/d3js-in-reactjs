@@ -7,6 +7,7 @@ var React = require('react');
 var ScatterPlot = require('./ScatterPlot');
 var BarChart = require('./BarChart');
 var TreeMap = require('./TreeMap');
+var request = require('superagent');
 
 function generatePairData() {
     var dataset = [];
@@ -30,17 +31,29 @@ function barChartData() {
 }
 
 function treeMapData() {
-    var dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    var dataset = [];
-    for (var i = 0; i < 50; i++) {
-        var dow = Math.round(Math.random() * 6);
-        var hour = Math.round(Math.random() * 11);
-        dataset.push({
-            dayOfTheWeek: dows[dow],
-            hour: hour + ':00'
-        });
-    }
-    return Promise.resolve(dataset);
+    var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return new Promise(function(resolve, reject) {
+        request.get('https://api.github.com/repos/ohtomi/sandbox/commits')
+            .end(function(err, res) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                var json = res.body;
+                var dataset = json.map(function(entry) {
+                    var yyyymmdd = entry.commit.author.date.slice(0, 10);
+                    var hh = entry.commit.author.date.slice(11, 13);
+                    var dow = dows[new Date(yyyymmdd).getDay()];
+
+                    return {
+                        author: entry.commit.author.name,
+                        dayOfTheWeek: dow,
+                        hour: hh
+                    };
+                });
+                resolve(dataset);
+            });
+    });
 }
 
 function generateData(chartComponent, done) {

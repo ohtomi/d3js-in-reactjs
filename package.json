@@ -20,6 +20,7 @@
     "d3": "^3.5.13",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
+    "superagent": "^1.7.2",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
