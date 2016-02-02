@@ -98,7 +98,11 @@ var TreeMap = React.createClass({
                     return;
                 }
                 var index = d.depth - 1;
-                that.props.changeFunctionsOrder(index);
+                var order = d3.range(that.props.groupByFunctions.length);
+                order[0] = index;
+                order[index] = 0;
+                var groupByFunctions = d3.permute(that.props.groupByFunctions, order);
+                that.props.changeFunctionsOrder(groupByFunctions);
             });
 
         rects

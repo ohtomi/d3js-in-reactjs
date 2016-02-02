@@ -144,15 +144,7 @@ var App = React.createClass({
         this.refreshData(chartComponent);
     },
 
-    changeFunctionsOrder: function(i) {
-        if (i === 0 || i < 0 || i >= this.state.groupByFunctions.length) {
-            return;
-        }
-
-        var groupByFunctions = [];
-        groupByFunctions = groupByFunctions.concat(this.state.groupByFunctions[i]);
-        groupByFunctions = groupByFunctions.concat(this.state.groupByFunctions.slice(0, i));
-        groupByFunctions = groupByFunctions.concat(this.state.groupByFunctions.slice(i + 1));
+    changeFunctionsOrder: function(groupByFunctions) {
         this.setState({groupByFunctions: groupByFunctions});
     },
 
