@@ -14,8 +14,11 @@ var TreeMap = React.createClass({
         width: React.PropTypes.number,
         height: React.PropTypes.number,
         xPadding: React.PropTypes.number,
-        yPadding: React.PropTypes.number,
-        changeFunctionsOrder: React.PropTypes.func
+        yPadding: React.PropTypes.number
+    },
+
+    contextTypes: {
+        emitter: React.PropTypes.object
     },
 
     componentDidMount: function() {
@@ -102,7 +105,7 @@ var TreeMap = React.createClass({
                 order[0] = index;
                 order[index] = 0;
                 var groupByFunctions = d3.permute(that.props.groupByFunctions, order);
-                that.props.changeFunctionsOrder(groupByFunctions);
+                that.context.emitter.emit('changeFunctionsOrder', groupByFunctions);
             });
 
         rects

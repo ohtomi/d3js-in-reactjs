@@ -4,10 +4,13 @@
 'use strict';
 
 var React = require('react');
+var EventEmitter = require('events').EventEmitter;
 var ScatterPlot = require('./ScatterPlot');
 var BarChart = require('./BarChart');
 var TreeMap = require('./TreeMap');
 var request = require('superagent');
+
+var emitter = new EventEmitter();
 
 function generatePairData() {
     var dataset = [];
@@ -97,6 +100,16 @@ function getFunctions(chartComponent) {
 
 var App = React.createClass({
 
+    childContextTypes: {
+        emitter: React.PropTypes.object
+    },
+
+    getChildContext: function() {
+        return {
+            emitter: emitter
+        };
+    },
+
     getInitialState: function() {
         return {
             chartComponent: ScatterPlot,
@@ -105,12 +118,13 @@ var App = React.createClass({
             width: 800,
             height: 400,
             xPadding: 40,
-            yPadding: 20,
-            changeFunctionsOrder: this.changeFunctionsOrder
+            yPadding: 20
         };
     },
 
     componentDidMount: function() {
+        emitter.on('changeFunctionsOrder', this.changeFunctionsOrder);
+
         var dataset = [];
         var groupByFunctions = getFunctions(this.state.chartComponent);
         this.setState({
