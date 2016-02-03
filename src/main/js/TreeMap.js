@@ -34,34 +34,6 @@ var TreeMap = React.createClass({
     },
 
     updateChart: function() {
-        var nest = _.chain(this.props.groupByFunctions)
-            .reduce(function(nest, attr) {
-                return nest.key(function(d) {
-                    return attr.func(d[attr.key]);
-                });
-            }, d3.nest())
-            .value();
-
-        var commits = nest.rollup(function(values) {
-                return d3.sum(values, function() {
-                    return 1;
-                });
-            })
-            .entries(this.props.dataset);
-
-        var partition = d3.layout.partition()
-            .children(function(d) {
-                return d.values;
-            })
-            .value(function(d) {
-                return d.values;
-            });
-
-        var nodes = partition.nodes({
-            key: 'All',
-            values: commits
-        });
-
         var colorScale = d3.scale.category10();
 
         var that = this;
@@ -69,7 +41,7 @@ var TreeMap = React.createClass({
         var svg = d3.select(this.refs.chart).select('svg');
 
         var rects = svg.selectAll('rect')
-            .data(nodes);
+            .data(this.props.dataset);
 
         rects
             .enter()
@@ -101,11 +73,7 @@ var TreeMap = React.createClass({
                     return;
                 }
                 var index = d.depth - 1;
-                var order = d3.range(that.props.groupByFunctions.length);
-                order[0] = index;
-                order[index] = 0;
-                var groupByFunctions = d3.permute(that.props.groupByFunctions, order);
-                that.context.emitter.emit('changeFunctionsOrder', groupByFunctions);
+                that.context.emitter.emit('click:rect', index);
             });
 
         rects
@@ -113,7 +81,7 @@ var TreeMap = React.createClass({
             .remove();
 
         var texts = svg.selectAll('text')
-            .data(nodes);
+            .data(this.props.dataset);
 
         texts
             .enter()

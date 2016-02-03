@@ -5,6 +5,8 @@
 
 var React = require('react');
 var EventEmitter = require('events').EventEmitter;
+var d3 = require('d3');
+var _ = require('underscore');
 var ScatterPlot = require('./ScatterPlot');
 var BarChart = require('./BarChart');
 var TreeMap = require('./TreeMap');
@@ -33,44 +35,6 @@ function barChartData() {
     return Promise.resolve(generatePairData());
 }
 
-function treeMapData() {
-    var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return new Promise(function(resolve, reject) {
-        request.get('https://api.github.com/repos/ohtomi/sandbox/commits')
-            .end(function(err, res) {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                var json = res.body;
-                var dataset = json.map(function(entry) {
-                    var yyyymmdd = entry.commit.author.date.slice(0, 10);
-                    var hh = entry.commit.author.date.slice(11, 13);
-                    var dow = dows[new Date(yyyymmdd).getDay()];
-
-                    return {
-                        author: entry.commit.author.name,
-                        dayOfTheWeek: dow,
-                        hour: hh
-                    };
-                });
-                resolve(dataset);
-            });
-    });
-}
-
-function generateData(chartComponent, done) {
-    if (chartComponent === ScatterPlot) {
-        scatterPlotData().then(done);
-    } else if (chartComponent === BarChart) {
-        barChartData().then(done);
-    } else if (chartComponent === TreeMap) {
-        treeMapData().then(done);
-    } else {
-        done([]);
-    }
-}
-
 var treeMapFunctions = [
     {
         key: 'dayOfTheWeek',
@@ -86,15 +50,72 @@ var treeMapFunctions = [
     }
 ];
 
-function getFunctions(chartComponent) {
+function treeMapData() {
+    var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    return new Promise(function(resolve, reject) {
+        request.get('https://api.github.com/repos/ohtomi/sandbox/commits')
+            .end(function(err, res) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                var json = res.body;
+                var commits = json.map(function(entry) {
+                    var yyyymmdd = entry.commit.author.date.slice(0, 10);
+                    var hh = entry.commit.author.date.slice(11, 13);
+                    var dow = dows[new Date(yyyymmdd).getDay()];
+
+                    return {
+                        author: entry.commit.author.name,
+                        dayOfTheWeek: dow,
+                        hour: hh
+                    };
+                });
+
+                var nest = _.chain(treeMapFunctions)
+                    .reduce(function(nest, attr) {
+                        return nest.key(function(d) {
+                            return attr.func(d[attr.key]);
+                        });
+                    }, d3.nest())
+                    .value();
+
+                var commitCount = nest.rollup(function(values) {
+                        return d3.sum(values, function() {
+                            return 1;
+                        });
+                    })
+                    .entries(commits);
+
+                var partition = d3.layout.partition()
+                    .children(function(d) {
+                        return d.values;
+                    })
+                    .value(function(d) {
+                        return d.values;
+                    });
+
+                var dataset = partition.nodes({
+                    key: 'All',
+                    values: commitCount
+                });
+
+                resolve(dataset);
+            });
+    });
+}
+
+function generateData(chartComponent, done) {
     if (chartComponent === ScatterPlot) {
-        return [];
+        scatterPlotData().then(done);
     } else if (chartComponent === BarChart) {
-        return [];
+        barChartData().then(done);
     } else if (chartComponent === TreeMap) {
-        return treeMapFunctions;
+        treeMapData().then(done);
     } else {
-        return [];
+        done([]);
     }
 }
 
@@ -114,7 +135,6 @@ var App = React.createClass({
         return {
             chartComponent: ScatterPlot,
             dataset: [],
-            groupByFunctions: [],
             width: 800,
             height: 400,
             xPadding: 40,
@@ -123,15 +143,7 @@ var App = React.createClass({
     },
 
     componentDidMount: function() {
-        emitter.on('changeFunctionsOrder', this.changeFunctionsOrder);
-
-        var dataset = [];
-        var groupByFunctions = getFunctions(this.state.chartComponent);
-        this.setState({
-            dataset: dataset,
-            groupByFunctions: groupByFunctions
-        });
-
+        emitter.on('click:rect', this.changeFunctionsOrder);
         this.refreshData(this.state.chartComponent);
     },
 
@@ -147,19 +159,20 @@ var App = React.createClass({
             return;
         }
 
-        var dataset = [];
-        var groupByFunctions = getFunctions(chartComponent);
         this.setState({
             chartComponent: chartComponent,
-            dataset: dataset,
-            groupByFunctions: groupByFunctions
+            dataset: []
         });
 
         this.refreshData(chartComponent);
     },
 
-    changeFunctionsOrder: function(groupByFunctions) {
-        this.setState({groupByFunctions: groupByFunctions});
+    changeFunctionsOrder: function(index) {
+        var order = d3.range(treeMapFunctions.length);
+        order[0] = index;
+        order[index] = 0;
+        treeMapFunctions = d3.permute(treeMapFunctions, order);
+        this.refreshData(this.state.chartComponent);
     },
 
     render: function() {
