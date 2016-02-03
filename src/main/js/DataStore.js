@@ -35,6 +35,21 @@ var treeMapFunctions = [
     }
 ];
 
+var heatMapFunctions = [
+    {
+        key: 'dayOfTheWeek',
+        func: function(value) {
+            return value;
+        }
+    },
+    {
+        key: 'hour',
+        func: function(value) {
+            return parseInt(value / 3);
+        }
+    }
+];
+
 var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function fetchCommitData(nestFunctions) {
@@ -113,6 +128,19 @@ var DataStore = {
                         values: commitCount
                     });
 
+                    resolve(dataset);
+                })
+                .catch(function(err) {
+                    reject(err);
+                });
+        });
+    },
+
+    heatMapData: function() {
+        return new Promise(function(resolve, reject) {
+            fetchCommitData(heatMapFunctions)
+                .then(function(commitCount) {
+                    var dataset = commitCount;
                     resolve(dataset);
                 })
                 .catch(function(err) {

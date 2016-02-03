@@ -9,6 +9,7 @@ var DataStore = require('./DataStore');
 var ScatterPlot = require('./ScatterPlot');
 var BarChart = require('./BarChart');
 var TreeMap = require('./TreeMap');
+var HeatMap = require('./HeatMap');
 
 var emitter = new EventEmitter();
 
@@ -19,6 +20,8 @@ function generateData(chartComponent, done) {
         DataStore.barChartData().then(done);
     } else if (chartComponent === TreeMap) {
         DataStore.treeMapData().then(done);
+    } else if (chartComponent === HeatMap) {
+        DataStore.heatMapData().then(done);
     } else {
         done([]);
     }
@@ -87,6 +90,8 @@ var App = React.createClass({
                         <a href="#" onClick={this.switchChartType.bind(null, BarChart)}>Bar Chart</a>
                         {' '}
                         <a href="#" onClick={this.switchChartType.bind(null, TreeMap)}>Tree Map</a>
+                        {' '}
+                        <a href="#" onClick={this.switchChartType.bind(null, HeatMap)}>Heat Map</a>
                     </div>
                     <div style={{float: 'right'}}>
                         <a href="#" onClick={this.refreshData.bind(null, this.state.chartComponent)}>Refresh Data</a>
