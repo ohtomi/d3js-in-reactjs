@@ -7,55 +7,54 @@ var d3 = require('d3');
 var _ = require('underscore');
 var request = require('superagent');
 
+function generatePairData() {
+    var dataset = [];
+    var numDataPoints = 50;
+    var number1Range = Math.random() * 1000;
+    var number2Range = Math.random() * 1000;
+    for (var i = 0; i < numDataPoints; i++) {
+        var newNumber1 = Math.round(Math.random() * number1Range);
+        var newNumber2 = Math.round(Math.random() * number2Range);
+        dataset.push([newNumber1, newNumber2]);
+    }
+    return dataset;
+}
+
+var treeMapFunctions = [
+    {
+        key: 'dayOfTheWeek',
+        func: function(value) {
+            return value;
+        }
+    },
+    {
+        key: 'hour',
+        func: function(value) {
+            return value;
+        }
+    }
+];
+
+var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 var DataStore = {
 
-    generatePairData: function() {
-        var dataset = [];
-        var numDataPoints = 50;
-        var number1Range = Math.random() * 1000;
-        var number2Range = Math.random() * 1000;
-        for (var i = 0; i < numDataPoints; i++) {
-            var newNumber1 = Math.round(Math.random() * number1Range);
-            var newNumber2 = Math.round(Math.random() * number2Range);
-            dataset.push([newNumber1, newNumber2]);
-        }
-        return dataset;
-    },
-
     scatterPlotData: function() {
-        return Promise.resolve(this.generatePairData());
+        return Promise.resolve(generatePairData());
     },
 
     barChartData: function() {
-        return Promise.resolve(this.generatePairData());
+        return Promise.resolve(generatePairData());
     },
 
-    treeMapFunctions: [
-        {
-            key: 'dayOfTheWeek',
-            func: function(value) {
-                return value;
-            }
-        },
-        {
-            key: 'hour',
-            func: function(value) {
-                return value;
-            }
-        }
-    ],
-
     permuteTreeMapFunctions: function(index) {
-        var order = d3.range(this.treeMapFunctions.length);
+        var order = d3.range(treeMapFunctions.length);
         order[0] = index;
         order[index] = 0;
-        this.treeMapFunctions = d3.permute(this.treeMapFunctions, order);
+        treeMapFunctions = d3.permute(treeMapFunctions, order);
     },
 
     treeMapData: function() {
-        var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-        var that = this;
         return new Promise(function(resolve, reject) {
             request.get('https://api.github.com/repos/ohtomi/sandbox/commits')
                 .end(function(err, res) {
@@ -77,7 +76,7 @@ var DataStore = {
                         };
                     });
 
-                    var nest = _.chain(that.treeMapFunctions)
+                    var nest = _.chain(treeMapFunctions)
                         .reduce(function(nest, attr) {
                             return nest.key(function(d) {
                                 return attr.func(d[attr.key]);
