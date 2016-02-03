@@ -37,6 +37,48 @@ var treeMapFunctions = [
 
 var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+function fetchCommitData(nestFunctions) {
+    return new Promise(function(resolve, reject) {
+        request.get('https://api.github.com/repos/ohtomi/sandbox/commits')
+            .end(function(err, res) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                var json = res.body;
+                var commits = json.map(function(entry) {
+                    var yyyymmdd = entry.commit.author.date.slice(0, 10);
+                    var hh = entry.commit.author.date.slice(11, 13);
+                    var dow = dows[new Date(yyyymmdd).getDay()];
+
+                    return {
+                        author: entry.commit.author.name,
+                        dayOfTheWeek: dow,
+                        hour: hh
+                    };
+                });
+
+                var nest = _.chain(nestFunctions)
+                    .reduce(function(nest, attr) {
+                        return nest.key(function(d) {
+                            return attr.func(d[attr.key]);
+                        });
+                    }, d3.nest())
+                    .value();
+
+                var commitCount = nest.rollup(function(values) {
+                        return d3.sum(values, function() {
+                            return 1;
+                        });
+                    })
+                    .entries(commits);
+
+                resolve(commitCount);
+            });
+    });
+}
+
 var DataStore = {
 
     scatterPlotData: function() {
@@ -56,48 +98,15 @@ var DataStore = {
 
     treeMapData: function() {
         return new Promise(function(resolve, reject) {
-            request.get('https://api.github.com/repos/ohtomi/sandbox/commits')
-                .end(function(err, res) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-
-                    var json = res.body;
-                    var commits = json.map(function(entry) {
-                        var yyyymmdd = entry.commit.author.date.slice(0, 10);
-                        var hh = entry.commit.author.date.slice(11, 13);
-                        var dow = dows[new Date(yyyymmdd).getDay()];
-
-                        return {
-                            author: entry.commit.author.name,
-                            dayOfTheWeek: dow,
-                            hour: hh
-                        };
-                    });
-
-                    var nest = _.chain(treeMapFunctions)
-                        .reduce(function(nest, attr) {
-                            return nest.key(function(d) {
-                                return attr.func(d[attr.key]);
-                            });
-                        }, d3.nest())
-                        .value();
-
-                    var commitCount = nest.rollup(function(values) {
-                            return d3.sum(values, function() {
-                                return 1;
-                            });
-                        })
-                        .entries(commits);
-
+            fetchCommitData(treeMapFunctions)
+                .then(function(commitCount) {
                     var partition = d3.layout.partition()
-                        .children(function(d) {
-                            return d.values;
-                        })
-                        .value(function(d) {
-                            return d.values;
-                        });
+                    .children(function(d) {
+                        return d.values;
+                    })
+                    .value(function(d) {
+                        return d.values;
+                    });
 
                     var dataset = partition.nodes({
                         key: 'All',
@@ -105,6 +114,9 @@ var DataStore = {
                     });
 
                     resolve(dataset);
+                })
+                .catch(function(err) {
+                    reject(err);
                 });
         });
     }
