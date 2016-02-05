@@ -45,7 +45,7 @@ var App = React.createClass({
             dataset: [],
             width: 800,
             height: 400,
-            xPadding: 40,
+            xPadding: 50,
             yPadding: 20
         };
     },

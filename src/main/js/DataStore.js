@@ -20,6 +20,8 @@ function generatePairData() {
     return dataset;
 }
 
+var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 var treeMapFunctions = [
     {
         key: 'dayOfTheWeek',
@@ -40,6 +42,9 @@ var heatMapFunctions = [
         key: 'dayOfTheWeek',
         func: function(value) {
             return value;
+        },
+        sort: function(a, b) {
+            return _.indexOf(dows, a) - _.indexOf(dows, b);
         }
     },
     {
@@ -49,8 +54,6 @@ var heatMapFunctions = [
         }
     }
 ];
-
-var dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function fetchCommitData(nestFunctions) {
     return new Promise(function(resolve, reject) {
@@ -76,9 +79,15 @@ function fetchCommitData(nestFunctions) {
 
                 var nest = _.chain(nestFunctions)
                     .reduce(function(nest, attr) {
-                        return nest.key(function(d) {
+                        nest = nest.key(function(d) {
                             return attr.func(d[attr.key]);
                         });
+                        if (attr.sort) {
+                            nest = nest.sortKeys(function(a, b) {
+                                return attr.sort(a, b);
+                            });
+                        }
+                        return nest;
                     }, d3.nest())
                     .value();
 
