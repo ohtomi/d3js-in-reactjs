@@ -100,7 +100,19 @@ var HeatMap = React.createClass({
             .attr('fill', function(d) {
                 return colorScale(d.values);
             })
-            .attr('stroke', 'grey');
+            .attr('stroke', 'grey')
+            .on('mouseover', function(d) {
+                svg.append('text').classed('tooltip', true)
+                    .attr('x', d3.event.x + 10).attr('y', d3.event.y)
+                    .text(d.values + ' commit(s)');
+            })
+            .on('mousemove', function() {
+                svg.selectAll('text.tooltip')
+                    .attr('x', d3.event.x + 10).attr('y', d3.event.y);
+            })
+            .on('mouseleave', function() {
+                svg.selectAll('text.tooltip').remove();
+            });
 
         rects
             .exit()
